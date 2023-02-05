@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% block title %}<title>Articles</title>{% endblock %}
+  {% block script %}{% endblock %}
+</head>
+
+<body>
+  {% if user.is_authenticated %}
+    <p>Hi, {{ user.username }}!</p>
+    <p><a href="{% url 'home' %}">Main page</a></p>
+    <p><a href="{% url 'logout' %}">Log out</a></p>
+  {% endif %}
+  {% block sidebar %}{% endblock %}
+  {% block content %}{% endblock %}
+</body>
+</html>

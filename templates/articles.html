@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block script %}
+<script>
+    function getArticlesPK(){
+        var url = "{% url 'api_articles' %}";
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            var data = JSON.parse(this.responseText);
+            console.log(data);
+            data = data.articles;
+            for (var i = 0; i < data.length; i++)
+            {
+                var opt = document.createElement('option');
+                opt.value = data[i];
+                opt.textContent = data[i];
+                document.getElementById('aselect').appendChild(opt);
+                var opt1 = document.createElement('option');
+                opt1.value = data[i];
+                opt1.textContent = data[i];
+                document.getElementById('cselect').appendChild(opt1);
+                var opt2 = document.createElement('option');
+            }
+        };
+        xhr.send();
+    }
+
+    window.onload = function(){ getArticlesPK(); getCategories(); }
+</script>
+{% endblock %}
+
+{% block content %}
+
+{% if not user.is_authenticated %}
+    <p>You need login to see this page!</p>
+    <a href="{% url 'login' %}">Login</a>
+{% else %}
+    <form id="deleteForm" action="{% url 'api_articles' %}" method="POST" enctype="application/json">
+        {% csrf_token %}
+        <select id="aselect" style="width:200px" name="pk"></select>
+        <input name="type" value="del" hidden/>
+        <button type="submit">Delete selected article</button>
+        <br><br>
+    </form>
+    <br><label>Create new article</label>
+    <form id="createForm" action="{% url 'api_articles' %}" method="POST" enctype="application/json">
+        {% csrf_token %}
+        <input name="type" value="add" hidden/><br><br>
+        <input placeholder="Name" name="name" style="width:200px"/><br><br>
+        <input placeholder="Content" name="content" style="width:200px"/><br><br>
+        <input placeholder="Link" name="link" style="width:200px"/><br><br>
+        <input placeholder="Categories via space" style="width:200px" name="categories"/><br><br>
+        <button type="submit">Create artice</button>
+        <br><br>
+    </form>
+    <br><label>Edit existing article</label>
+    <form id="editForm" action="{% url 'api_articles' %}" method="POST" enctype="application/json">
+        {% csrf_token %}
+        <input name="type" value="add" hidden/><br><br>
+        <select id="cselect" style="width:200px" name="pk"></select><br><br>
+        <input id="name" placeholder="Name" name="name" style="width:200px"/><br><br>
+        <input id="content" placeholder="Content" name="content" style="width:200px"/><br><br>
+        <input id="link" placeholder="Link" name="link" style="width:200px"/><br><br>
+        <input id="category" placeholder="Categories via space" style="width:200px" name="categories"/><br><br>
+        <button type="submit">Update artice</button>
+        <br><br>
+    </form>
+{% endif %}
+
+{% endblock %}

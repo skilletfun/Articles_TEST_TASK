@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block script %}
+<script>
+    window.onload = function(){
+        var url = "{% url 'api_categories' %}";
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader('Content-type', 'application/json');
+        xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        xhr.onload = function() {
+            var data = JSON.parse(this.responseText);
+            console.log(data);
+            data = data.categories;
+            for (var i = 0; i < data.length; i++)
+            {
+                var opt = document.createElement('option');
+                opt.value = data[i];
+                opt.textContent = data[i];
+                var opt1 = document.createElement('option');
+                opt1.value = data[i];
+                opt1.textContent = data[i];
+                document.getElementById('cselect').appendChild(opt);
+                document.getElementById('cselect2').appendChild(opt1);
+            }
+        };
+        xhr.send(JSON.stringify({'type': 'get', 'csrfmiddlewaretoken': '{{ csrf_token }}'}));
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+
+{% if not user.is_authenticated %}
+    <p>You need login to see this page!</p>
+    <a href="{% url 'login' %}">Login</a>
+{% else %}
+    <form action="{% url 'api_categories' %}" method="POST" enctype="application/json">
+        {% csrf_token %}
+        <input name="name" style="width:200px"/>
+        <input name="type" value="add" hidden/>
+        <button type="submit">Add new category</button>
+        <br><br>
+    </form>
+    <form action="{% url 'api_categories' %}" method="POST" enctype="application/json">
+        {% csrf_token %}
+        <select id="cselect" style="width:200px" name="name"></select>
+        <input name="type" value="del" hidden/>
+        <button type="submit">Delete selected category</button>
+        <br><br>
+    </form>
+    <form action="{% url 'api_categories' %}" method="POST" enctype="application/json">
+        {% csrf_token %}
+        <select id="cselect2" style="width:200px" name="name"></select>
+        <input name="type" value="rename" hidden/>
+        <input name="newname" style="width:200px"/>
+        <button type="submit">Rename selected category</button>
+        <br><br>
+    </form>
+{% endif %}
+
+{% endblock %}

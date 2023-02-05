@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block script %}
+<script>
+    function loadArticles(category){
+        var url = "{% url 'api_articles' %}";
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader('Content-type', 'application/json');
+        xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        xhr.onload = function() {
+            var data = JSON.parse(this.responseText).articles;
+            console.log(data);
+            document.getElementById('maincontent').replaceChildren();
+            for (var i = 0; i < data.length; i++)
+            {
+                var div = document.createElement('div');
+                var h1 = document.createElement('h1');
+                var a = document.createElement('a');
+                a.textContent = data[i]['name'];
+                a.href = data[i]['link'];
+                h1.appendChild(a);
+                var h2 = document.createElement('h3');
+                var cats = '';
+                for (var j = 0; j < data[i]['categories'].length; j++)
+                {
+                    cats = cats + data[i]['categories'][j]['name'] + ' ';
+                }
+                h2.textContent = data[i]['creator'] + ',  ' + cats;
+                var p1 = document.createElement('p');
+                p1.textContent = data[i]['content'];
+                var p2 = document.createElement('p');
+                p2.textContent = data[i]['create_date'];
+                div.appendChild(h1);
+                div.appendChild(h2);
+                div.appendChild(p1);
+                div.appendChild(p2);
+                div.appendChild(document.createElement('br'));
+                document.getElementById('maincontent').appendChild(div);
+            }
+        };
+        xhr.send(JSON.stringify({'type': 'get', 'category': category, 'csrfmiddlewaretoken': '{{ csrf_token }}'}));
+    }
+    function loadCategories(){
+        var url = "{% url 'api_categories' %}";
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            var data = JSON.parse(this.responseText);
+            console.log(data);
+            data = data.categories;
+            var opt = document.createElement('option');
+            opt.value = '__all__';
+            opt.textContent = 'All articles';
+            document.getElementById('cselect').appendChild(opt);
+            for (var i = 0; i < data.length; i++)
+            {
+                var opt = document.createElement('option');
+                opt.value = data[i];
+                opt.textContent = data[i];
+                document.getElementById('cselect').appendChild(opt);
+            }
+        };
+        xhr.send();
+    }
+    function loadArticlesByCat(){ loadArticles(document.getElementById('cselect').value); }
+    window.onload = function(){ loadArticles('__all__'); loadCategories(); }
+</script>
+{% endblock %}
+
+{% block content %}
+
+{% if not user.is_authenticated %}
+    <p>You can login to add new articles!</p>
+    <a href="{% url 'login' %}">Login</a>
+{% else %}
+    <a href="{% url 'articles' %}">Edit your articles</a>
+    <a href="{% url 'categories' %}">Edit your categories</a>
+{% endif %}
+<br><br>
+<select id="cselect" style="width:200px" onchange="loadArticlesByCat();"></select><br><br>
+<div id="maincontent"></div>
+
+{% endblock %}
